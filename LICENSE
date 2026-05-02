@@ -25,4 +25,4 @@ SOFTWARE.
 Note on bundled assets:
 The pixel cat sprites in src/assets/ are licensed separately by their creator —
 see src/assets/SPRITE_LICENSE.txt for terms. The MIT license above applies
-only to the FocusCat source code, not to the bundled sprite art.
+only to the Committen source code, not to the bundled sprite art.

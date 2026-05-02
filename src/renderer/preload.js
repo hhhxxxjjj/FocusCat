@@ -1,7 +1,7 @@
 // preload: 把有限的 IPC 能力暴露给 renderer
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('focusCat', {
+contextBridge.exposeInMainWorld('committen', {
   quit: () => ipcRenderer.send('cat:quit'),
   resetPosition: () => ipcRenderer.send('cat:reset-position'),
 

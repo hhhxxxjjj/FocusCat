@@ -1,4 +1,4 @@
-// FocusCat renderer
+// Committen renderer
 // Day 10-11: 状态由主进程驱动 + 饱腹感血条显示
 
 (function () {
@@ -16,27 +16,24 @@
 
   function setState(name) {
     if (!STATES.includes(name)) {
-      console.warn('[FocusCat] unknown state:', name);
+      console.warn('[Committen] unknown state:', name);
       return;
     }
     if (name === currentState) return;
     sprite.classList.remove(`cat-sprite--${currentState}`);
     sprite.classList.add(`cat-sprite--${name}`);
     currentState = name;
-    console.log('[FocusCat] state →', name);
+    console.log('[Committen] state →', name);
   }
 
   // 主进程通知方向变化(走到边缘要转身)
   // dir = 1 表示向右,-1 表示向左
   // 素材默认朝向是"左",所以向右走 (dir=1) 时要翻转
-  window.focusCat.onDirection((dir) => {
+  window.committen.onDirection((dir) => {
     document.body.classList.toggle('cat-flipped', dir === 1);
   });
 
-  window.focusCat.setState = setState;
-  window.focusCat.getState = () => currentState;
-
-  window.focusCat.onSetState((state) => {
+  window.committen.onSetState((state) => {
     setState(state);
   });
 
@@ -78,12 +75,19 @@
     setTimeout(() => popup.remove(), 1300);
   }
 
-  window.focusCat.onHunger((value) => {
+  window.committen.onHunger((value) => {
     updateHunger(value);
   });
 
-  // 调试用
-  window.focusCat.getHunger = () => lastHunger;
+  // ============ 调试入口 ============
+  // contextBridge 暴露的 window.committen 是冻结对象,不能从这边加属性。
+  // 所以 debug 方法都挂到独立的 window.committenDebug 上。
+  window.committenDebug = {
+    setState,
+    getState: () => currentState,
+    getHunger: () => lastHunger,
+    getSTATES: () => STATES.slice(),
+  };
 
   // ============ 首次启动 ============
   document.body.classList.add('cat--intro');
@@ -91,15 +95,15 @@
 
   // ============ 按钮 ============
   btnQuit.addEventListener('click', () => {
-    if (confirm('让 FocusCat 退出吗?(她会饿死的)')) {
-      window.focusCat.quit();
+    if (confirm("Quit Committen? (She'll starve.)")) {
+      window.committen.quit();
     }
   });
 
   btnReset.addEventListener('click', () => {
-    window.focusCat.resetPosition();
+    window.committen.resetPosition();
   });
 
-  console.log('[FocusCat] renderer ready (Day 10-11)');
-  console.log('[FocusCat] 调试:window.focusCat.setState(...) / getHunger()');
+  console.log('[Committen] renderer ready');
+  console.log('[Committen] Debug: window.committenDebug.setState("attack") / .getHunger()');
 })();

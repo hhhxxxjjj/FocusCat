@@ -1,4 +1,4 @@
-# FocusCat - 最小化指定 HWND 的窗口
+# Committen - 最小化指定 HWND 的窗口
 # 接受一个 -Hwnd 参数(64 位整数,来自 active-win 的 win.id)
 
 param(

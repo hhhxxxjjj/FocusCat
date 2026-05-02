@@ -1,154 +1,163 @@
-# FocusCat 🐱
+# Committen 🐱
 
-> **You code, she eats. You don't, she starves. You context-switch, she eats your apps.**
+> **You commit, she eats. You don't, she starves.**
 
-A pixel cat desktop companion for programmers. She lives on your screen and reacts to your real coding behavior — `git commit` feeds her, drifting off to non-work apps makes her pounce on those windows and minimize them. Built around symbiosis, not punishment: you don't want her to go hungry.
+`Committen` = `commit` + `kitten`. A pixel cat who lives on your desktop and eats your `git commit`s. When you slack off into apps that aren't on your work whitelist, she pounces and minimizes them. When you don't code, she goes hungry. You don't want her to be hungry.
 
-> **Status:** `v0.1` — feature-complete, packaging in progress. Pre-built installer coming soon. For now, run from source (see below).
+<!-- TODO: GIF demo here. 30s loop showing idle → switch to WeChat → cat attacks/minimizes → git commit → +30 popup → eat animation -->
+
+> **Status:** `v0.1.0` shipped. [Download the Windows installer →](https://github.com/hhhxxxjjj/Committen/releases/latest)
+>
+> ⚠️ Note: the v0.1.0 release was published under the previous name **FocusCat** before we renamed to Committen. Functionally identical; v0.1.1 (coming) will rebrand the installer.
+
+---
+
+## Why she exists
+
+Most focus tools work through **punishment** — they block sites, kill apps, lock you out. You hate them and try to bypass them. They're a war between you and your tool.
+
+Committen works through **symbiosis**:
+
+- She's already there on your screen, watching. You like having her around.
+- Every `git commit` feeds her +30 hunger.
+- Hunger ticks down 1/min naturally. Switching to non-work apps costs her another 10.
+- At hunger 100 she sleeps. Below 50 she paces around your desktop looking for food. Below 20 her bar pulses red — she's starving.
+- You don't want her to starve. **That pull is stronger than any blocker.**
+
+It's the difference between *"I'm being punished for slacking"* and *"my cat is hungry because I'm slacking."* The doc behind this design (in this repo's history) went through 5 iterations to land on this mechanic.
 
 ---
 
 ## What she does
 
-| Trigger                                  | Reaction                                                    |
-| ---------------------------------------- | ----------------------------------------------------------- |
-| You `git commit` in a watched repo       | **Hunger +30**, plays `eat` animation, green `+30` popup    |
-| You switch to a non-whitelisted app      | She pounces (plays `eat`), **minimizes** the window, **−10** |
-| Time passes (every minute)               | Hunger −1                                                   |
-| Hunger reaches 100                       | She curls up and **sleeps** 💤                              |
-| Hunger drops below 50                    | She starts **walking around your desktop**, looking for food |
-| Hunger drops below 20                    | The hunger bar turns red and pulses                         |
+| Trigger | Reaction |
+|---------|----------|
+| `git commit` in a watched repo | **Hunger +30**, plays `eat` animation, green `+30` popup |
+| Switch to a non-whitelist app | She pounces (`attack` animation), **minimizes the window**, **−10 hunger** |
+| Time passes (every minute) | Hunger −1 |
+| Hunger reaches 100 | She curls up and **sleeps** 💤 |
+| Hunger drops below 50 | She **paces around your desktop** looking for food |
+| Hunger drops below 20 | Bar turns red and pulses |
 
-The cat is a transparent always-on-top window. You can drag her anywhere, hover for control buttons (reset position / quit), and she remembers where you put her across restarts.
+The cat is a transparent always-on-top window. Drag her anywhere. Hover for `⌂` (reset position) and `✕` (quit) controls. Position persists across restarts.
 
 ---
 
-## Quick start
+## Install
+
+### The easy way — Windows installer
+
+[**Download the latest .exe →**](https://github.com/hhhxxxjjj/Committen/releases/latest)
+
+Double-click to install. Find Committen in the Start Menu. Done.
+
+> ⚠️ Windows SmartScreen will warn that the app is from an "unknown publisher" — this is normal for any unsigned independent project. Click **More info → Run anyway** to proceed. You can audit the source in this repo first if you want.
+
+### The hacker way — run from source
 
 Requires Node.js 18+ on Windows.
 
 ```bash
-git clone https://github.com/<you>/FocusCat.git
-cd FocusCat
+git clone https://github.com/hhhxxxjjj/Committen.git
+cd Committen
 npm install
-npm start
+npm start          # production-ish run
+npm run dev        # opens DevTools alongside, useful for finding process names
 ```
 
-You should see an orange tabby pixel cat appear in the bottom-right corner of your screen, with a hunger bar above her head. Hover over her to see two control buttons: `⌂` (reset position) and `✕` (quit).
-
-For a debug session with DevTools:
-
-```bash
-npm run dev
-```
-
-In the DevTools console you can manually drive her:
-
-```js
-window.focusCat.setState('walk');   // 'idle' | 'walk' | 'eat' | 'sleep'
-window.focusCat.getHunger();         // current hunger value 0–100
-```
+Run from source if you want to **edit the whitelist or watch a custom git repo** — see Configuration below.
 
 ---
 
 ## Configuration
 
-Copy `config.example.json` to `config.json` and edit. `config.json` is gitignored and overrides the example.
+The packaged `.exe` ships with default settings. To customize, copy `config.example.json` to `config.json` and edit. `config.json` is gitignored and overrides the example.
+
+> v0.1 limitation: the packaged `.exe` reads its bundled config and can't be customized post-install. You need to clone the source for now. **v0.1.1 will move config to `userData/` so installed users can edit it.**
 
 ### Whitelist
 
-Apps in the whitelist are considered "work" — she ignores them. Match by either the display name (`"Claude"`, `"Windows Explorer"`) or the executable filename (`"Code.exe"`, `"chrome.exe"`).
+Apps in the whitelist are "work" — she ignores them. Match by display name (`"Claude"`, `"Windows Explorer"`) or executable filename (`"Code.exe"`, `"chrome.exe"`).
 
-To find what to whitelist, run `npm run dev`, switch to the offending app, and look at the terminal log:
+To find what to whitelist for a given app, run `npm run dev`, switch to the offending app, and look at the terminal log:
 
 ```
-[FocusCat] EAT name="WhateverApp" path="C:\...\app.exe" title="..." hwnd=...
+[Committen] ATTACK name="WhateverApp" path="C:\...\app.exe" title="..." hwnd=...
 ```
 
 Add `"WhateverApp"` (the `name` value) to your `whitelist` array, restart, done.
 
 ### Git monitor
 
-Set `gitRepo` to the path of any git repo you want her to watch. She tails `.git/logs/HEAD` for new commits — every commit gives her +30 hunger.
+Set `gitRepo` to a repo path she should watch:
 
 ```json
 "gitRepo": "D:\\path\\to\\your\\repo"
 ```
 
-She reacts to commits made anywhere — your IDE's commit button, a terminal in another directory, even commits from another tool. As long as the repo is the one configured.
+She tails `.git/logs/HEAD`. Every commit (made anywhere — IDE, terminal, GitHub Desktop) gives her +30.
 
 ### Real minimize vs. animation-only
 
-By default, `monitor.actuallyMinimize` is `false` — she only plays the `eat` animation when you switch to a non-whitelist app, but doesn't actually minimize the window. This is a safety setting so you can verify your whitelist is correct before letting her loose.
+Default: `monitor.actuallyMinimize: false` — she plays the attack animation but doesn't actually minimize the window. This is a safety setting so you can verify your whitelist before letting her loose.
 
-When you're confident:
+When you trust the whitelist, flip it:
 
 ```json
-"monitor": {
-  "actuallyMinimize": true
-}
+"monitor": { "actuallyMinimize": true }
 ```
 
 Restart, and she'll start actually minimizing distraction windows.
 
 ---
 
-## Architecture
+## How she works
 
 ```
-FocusCat (Electron)
+Committen (Electron)
 ├── Main process
-│   ├── WindowMonitor   — polls active-win, fires onIntruder if not whitelisted
+│   ├── WindowMonitor   — polls active-win every 1s, fires onIntruder if not whitelisted
 │   ├── GitWatcher      — fs.watchFile on .git/logs/HEAD, parses commit lines
 │   ├── HungerSystem    — 0–100 EventEmitter, persisted to userData/state.json
-│   ├── minimize.js     — PowerShell + User32 ShowWindow (no native modules)
+│   ├── minimize.js     — calls PowerShell + User32.ShowWindow (no native modules)
 │   └── orchestration   — wires events to sprite state + hunger updates via IPC
-└── Renderer process    — transparent, frameless, always-on-top window
-    ├── Sprite state machine (idle / walk / eat / sleep)
-    ├── Hunger bar UI (color-shift + pulse when low)
+└── Renderer (transparent always-on-top window)
+    ├── Sprite state machine (idle / walk / sleep / attack / eat)
+    ├── Hunger bar UI (color shift + pulse when low)
     └── Native drag region with hover-revealed controls
 ```
 
-No native modules to compile — the only "native" part is calling `powershell.exe` to invoke `User32.ShowWindow` for actual window minimization. Works on stock Windows, no Visual Studio required.
+**No native modules to compile.** The "native" part is calling `powershell.exe` to invoke `User32.ShowWindow` for actual window minimization. Runs on stock Windows, no Visual Studio Build Tools required.
 
 ---
 
 ## Roadmap
 
-| Day   | Goal                                          | Status |
-| ----- | --------------------------------------------- | ------ |
-| 1     | Transparent always-on-top window + emoji cat  | ✅     |
-| 2–3   | Native drag, position memory, multi-monitor, off-screen rescue, entrance animation | ✅ |
-| 4–5   | Pixel sprite + state machine (idle/walk/eat) | ✅     |
-| 6–7   | Active window monitor + actual minimize       | ✅     |
-| 8–9   | Git watcher + commit feeding                  | ✅     |
-| 10–11 | Hunger system + sleep state + desktop roaming | ✅     |
-| 12    | Config polish + user docs                     | 🚧     |
-| 13    | Build `.exe` installer                        | ⏳     |
-| 14    | Release: GitHub + V2EX + Reddit               | ⏳     |
+| Version | Goal | Status |
+|---------|------|--------|
+| `v0.1.0` | First public release: cat + sprite states + hunger + window monitor + git watcher | ✅ Released as FocusCat |
+| `v0.1.1` | Rename to Committen; config in `userData/` so installed users can edit; smarter UWP whitelist | 🚧 In progress |
+| `v0.2`   | Address top user-feedback items from v0.1.x | ⏳ |
+| later    | macOS port, custom sprite packs, statistics view | 💭 |
 
-See [`IDEAS.md`](IDEAS.md) for v0.2+ ideas (and explicitly rejected ones — death/revival, in-cat git GUI, file-save detection — with the reasoning).
+See [`IDEAS.md`](IDEAS.md) for the full backlog (and explicitly rejected ideas — death/revival, in-cat git GUI, file-save detection — with reasoning).
 
 ---
 
 ## Credits
 
-Pixel cat sprites by the artist of "Cat 2D Pixel Art" (paid full version). See [`CREDITS.md`](CREDITS.md) and `src/assets/SPRITE_LICENSE.txt` for license terms.
-
-The asset license permits use in projects (personal or commercial), but **not** redistribution as a standalone game asset, and **not** NFT use. The sprites are bundled here under that license.
+Pixel cat sprites by the artist of *Cat 2D Pixel Art* (paid full pack). See [`CREDITS.md`](CREDITS.md) and `src/assets/SPRITE_LICENSE.txt` for license terms — the sprites are usable in projects (personal/commercial) but **not** redistributable as game assets and **not** NFT-able.
 
 ---
 
 ## License
 
-`MIT` for the source code. See [`LICENSE`](LICENSE).
-
-The bundled sprite art has its own license — see `src/assets/SPRITE_LICENSE.txt`. Don't extract and republish the sprites separately.
+[`MIT`](LICENSE) for source code. Sprite art has its own license (see above). Don't extract and republish the sprites separately.
 
 ---
 
-## Why "FocusCat"?
+## Etymology
 
-Most focus tools work by punishment: they block sites, kill apps, lock you out. FocusCat works through symbiosis: she *needs* you to write code (commits feed her), and she's already there on your desktop watching. You don't quit her because you don't want her to starve — that's a stronger pull than any blocker.
+`commit` (the act of finalizing your code into git) + `kitten` (your accomplice on the desktop).
 
-It's a desktop pet that happens to also be a productivity tool. Or a productivity tool that happens to also be a pet. Pick your framing.
+She lives on your commits. Feed her well.

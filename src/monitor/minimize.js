@@ -1,4 +1,4 @@
-// FocusCat - 最小化指定窗口
+// Committen - 最小化指定窗口
 //
 // 实现:调用同目录下的 minimize.ps1,传 HWND 参数过去。
 // 用 PowerShell + User32.ShowWindow,避免引入需要本地编译的原生模块。
@@ -34,7 +34,7 @@ function minimizeByHwnd(hwnd) {
       (err, stdout, stderr) => {
         if (err) {
           console.error(
-            `[FocusCat] minimize hwnd=${hwnd} failed:`,
+            `[Committen] minimize hwnd=${hwnd} failed:`,
             err.message,
             stderr ? `| stderr: ${stderr.trim()}` : ''
           );
@@ -43,7 +43,7 @@ function minimizeByHwnd(hwnd) {
         }
         // 调试日志,确认确实跑了
         if (stdout && stdout.trim()) {
-          console.log(`[FocusCat] minimize ok: ${stdout.trim()}`);
+          console.log(`[Committen] minimize ok: ${stdout.trim()}`);
         }
         resolve(true);
       }

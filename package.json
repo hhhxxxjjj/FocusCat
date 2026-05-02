@@ -1,7 +1,7 @@
 {
-  "name": "focus-cat",
-  "version": "0.1.0",
-  "description": "你写代码,她吃饭。你不写,她饿。你切屏,她吃你的应用。",
+  "name": "committen",
+  "version": "0.1.1",
+  "description": "Committen = commit + kitten. A pixel cat desktop pet who eats your git commits and pounces on apps that aren't on your work whitelist.",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
@@ -14,7 +14,10 @@
     "focus",
     "productivity",
     "electron",
-    "pixel-cat"
+    "pixel-cat",
+    "kitten",
+    "git",
+    "commit"
   ],
   "author": "",
   "license": "MIT",
@@ -26,8 +29,8 @@
     "active-win": "^8.2.0"
   },
   "build": {
-    "appId": "com.focuscat.app",
-    "productName": "FocusCat",
+    "appId": "com.committen.app",
+    "productName": "Committen",
     "directories": {
       "output": "build"
     },

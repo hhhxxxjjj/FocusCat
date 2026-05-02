@@ -1,4 +1,4 @@
-// FocusCat - Git 仓库监听
+// Committen - Git 仓库监听
 //
 // 监听 <repo>/.git/logs/HEAD 文件——这个文件在每次 commit / checkout / merge / reset 时
 // 都会追加一行新记录。我们解析新增的行,只对 commit 类型的事件触发 onCommit 回调。
@@ -45,7 +45,7 @@ class GitWatcher {
   }
 
   // 如果 .git/logs/HEAD 不存在(用户还没 git init),每 3 秒重试一次,
-  // 这样用户先启动 FocusCat 再 git init 也能正常衔接
+  // 这样用户先启动 Committen 再 git init 也能正常衔接
   _tryAttach() {
     if (!this.running) return;
     if (this._watching) return;

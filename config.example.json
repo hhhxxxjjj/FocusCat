@@ -1,5 +1,5 @@
 {
-  "_comment": "FocusCat 用户配置示例。复制为 config.json 后修改,config.json 优先级高于本文件。",
+  "_comment": "Committen 用户配置示例。复制为 config.json 后修改,config.json 优先级高于本文件。",
 
   "_whitelist_note": "active-win 在 Windows 上对部分应用返回'显示名'(如 'Claude'、'Windows Explorer')而非 .exe 文件名,所以白名单同时包含两种形式才稳妥。",
 
@@ -40,6 +40,7 @@
     "notepad.exe",
     "Notepad++.exe",
 
+    "Committen.exe",
     "FocusCat.exe",
     "electron.exe",
 

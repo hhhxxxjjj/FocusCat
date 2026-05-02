@@ -1,4 +1,4 @@
-// FocusCat - 活动窗口监听
+// Committen - 活动窗口监听
 // Day 6:周期检查活动窗口,不在白名单 → 调用 onIntruder 回调
 // Day 7:在 onIntruder 里加上"真的最小化"
 

@@ -1,4 +1,4 @@
-// FocusCat - Electron 主进程
+// Committen - Electron 主进程
 // v0.1 Day 6: 加入活动窗口监听,非白名单窗口 → 触发猫切到 eat 状态
 //             (Day 7 再加上"真的最小化")
 
@@ -57,8 +57,8 @@ const DEFAULT_CONFIG = {
     'ApplicationFrameHost.exe', 'SystemSettings.exe', 'LockApp.exe',
     // 浏览器
     'chrome.exe', 'msedge.exe', 'firefox.exe',
-    // FocusCat 自己
-    'FocusCat.exe', 'electron.exe',
+    // Committen 自己(包含老名字 FocusCat.exe 兼容老安装)
+    'Committen.exe', 'FocusCat.exe', 'electron.exe',
     // AI 助手
     'Claude', 'Claude.exe', 'ClaudeDesktop.exe',
   ],
@@ -93,14 +93,14 @@ function loadConfig() {
           monitor: { ...DEFAULT_CONFIG.monitor, ...(cfg.monitor || {}) },
           hunger: { ...DEFAULT_CONFIG.hunger, ...(cfg.hunger || {}) },
         };
-        console.log(`[FocusCat] 配置来自 ${path.basename(p)}`);
+        console.log(`[Committen] 配置来自 ${path.basename(p)}`);
         return merged;
       }
     } catch (e) {
-      console.warn(`[FocusCat] 配置 ${p} 解析失败:`, e.message);
+      console.warn(`[Committen] 配置 ${p} 解析失败:`, e.message);
     }
   }
-  console.log('[FocusCat] 没找到 config.json,用内置默认值');
+  console.log('[Committen] 没找到 config.json,用内置默认值');
   return DEFAULT_CONFIG;
 }
 
@@ -127,7 +127,7 @@ function saveState(patch) {
     const next = { ...cur, ...patch };
     fs.writeFileSync(getStatePath(), JSON.stringify(next, null, 2), 'utf-8');
   } catch (e) {
-    console.error('[FocusCat] saveState failed:', e.message);
+    console.error('[Committen] saveState failed:', e.message);
   }
 }
 
@@ -406,7 +406,7 @@ function startRoaming() {
   roamLastTickAt = Date.now();
   notifyDirection();
   roamTimer = setInterval(roamTick, ROAM_TICK_MS);
-  console.log('[FocusCat] roam start dir=', roamDirection);
+  console.log('[Committen] roam start dir=', roamDirection);
 }
 
 function stopRoaming() {
@@ -421,7 +421,7 @@ function stopRoaming() {
     const [px, py] = catWindow.getPosition();
     saveState({ position: { x: px, y: py } });
   }
-  console.log('[FocusCat] roam stop');
+  console.log('[Committen] roam stop');
 }
 
 function roamTick() {
@@ -494,12 +494,12 @@ function triggerEat({ processName, processPath, title, hwnd }) {
   if (hunger) hunger.subtract(penalty);
 
   console.log(
-    `[FocusCat] ATTACK name="${processName}" path="${processPath || ''}" title="${title}" hwnd=${hwnd} minimize=${willMinimize} hunger=${hunger?.value}`
+    `[Committen] ATTACK name="${processName}" path="${processPath || ''}" title="${title}" hwnd=${hwnd} minimize=${willMinimize} hunger=${hunger?.value}`
   );
 
   if (willMinimize && hwnd) {
     minimizeByHwnd(hwnd).then((ok) => {
-      if (!ok) console.warn(`[FocusCat] minimize hwnd=${hwnd} returned false`);
+      if (!ok) console.warn(`[Committen] minimize hwnd=${hwnd} returned false`);
     });
   }
 
@@ -513,7 +513,7 @@ function triggerCommit({ sha, message }) {
   if (hunger) hunger.add(reward);
 
   console.log(
-    `[FocusCat] COMMIT sha=${shortSha} msg="${message}" reward=+${reward} hunger=${hunger?.value}`
+    `[Committen] COMMIT sha=${shortSha} msg="${message}" reward=+${reward} hunger=${hunger?.value}`
   );
 
   const dur = appConfig?.monitor?.eatDurationMs ?? 3000;
@@ -527,7 +527,7 @@ function startMonitor() {
     intervalMs: m.intervalMs || 1000,
     cooldownMs: m.cooldownMs || 5000,
     onIntruder: triggerEat,
-    onError: (e) => console.error('[FocusCat] monitor error:', e.message),
+    onError: (e) => console.error('[Committen] monitor error:', e.message),
   });
 
   // 等 renderer ready 之后再开始监听,避免 IPC 没建立就触发
@@ -548,9 +548,9 @@ function startHunger() {
   const savedHunger = loadState().hunger;
   if (savedHunger) {
     hunger.loadFromJSON(savedHunger);
-    console.log('[FocusCat] hunger restored:', hunger.value);
+    console.log('[Committen] hunger restored:', hunger.value);
   } else {
-    console.log('[FocusCat] hunger init:', hunger.value);
+    console.log('[Committen] hunger init:', hunger.value);
   }
 
   // 数值变化:广播给 renderer + 重算 base state + 持久化
@@ -561,7 +561,7 @@ function startHunger() {
     // 数值跨过 50 这条线时打个日志
     if ((delta > 0 && value >= 50 && value - delta < 50) ||
         (delta < 0 && value < 50 && value - delta >= 50)) {
-      console.log(`[FocusCat] hunger crossed 50 -> ${value} (${hunger.getLevel()})`);
+      console.log(`[Committen] hunger crossed 50 -> ${value} (${hunger.getLevel()})`);
     }
   });
 
@@ -586,14 +586,14 @@ function startGitWatcher() {
   const repoPath = appConfig.gitRepo;
   // 占位字符串(用户没改 example 模板里那条)直接跳过
   if (!repoPath || repoPath.includes('path\\to\\your\\repo')) {
-    console.log('[FocusCat] gitRepo not configured, skipping GitWatcher');
+    console.log('[Committen] gitRepo not configured, skipping GitWatcher');
     return;
   }
 
   gitWatcher = new GitWatcher({
     repoPath,
     onCommit: triggerCommit,
-    onError: (e) => console.error('[FocusCat] git error:', e.message),
+    onError: (e) => console.error('[Committen] git error:', e.message),
   });
 
   if (catWindow) {
@@ -623,9 +623,9 @@ ipcMain.on('cat:reset-position', () => {
 
 app.whenReady().then(() => {
   appConfig = loadConfig();
-  console.log('[FocusCat] whitelist:', (appConfig.whitelist || []).join(', '));
-  console.log('[FocusCat] interval:', appConfig.monitor?.intervalMs, 'ms, actuallyMinimize:', appConfig.monitor?.actuallyMinimize);
-  console.log('[FocusCat] gitRepo:', appConfig.gitRepo || '(none)');
+  console.log('[Committen] whitelist:', (appConfig.whitelist || []).join(', '));
+  console.log('[Committen] interval:', appConfig.monitor?.intervalMs, 'ms, actuallyMinimize:', appConfig.monitor?.actuallyMinimize);
+  console.log('[Committen] gitRepo:', appConfig.gitRepo || '(none)');
 
   createCatWindow();
   startHunger();
