@@ -113,6 +113,16 @@ body.cat-flipped .cat-sprite-pacer {
   to   { background-position: -640px 0; }
 }
 
+/* attack:8 帧,凶猛 0.55 秒一轮(扑爪攻击非白名单应用,比 eat 更急促) */
+.cat-sprite--attack {
+  background-image: url('../assets/attack.png');
+  animation: sprite-attack 0.55s steps(8) infinite;
+}
+@keyframes sprite-attack {
+  from { background-position: 0 0; }
+  to   { background-position: -640px 0; }
+}
+
 /* 入场:从下方弹起,带轻微 overshoot */
 @keyframes cat-hello {
   0%   { transform: scale(1.5) translateY(40px); opacity: 0; }

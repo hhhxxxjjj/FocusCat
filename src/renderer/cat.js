@@ -10,7 +10,8 @@
   const hungerNum = document.getElementById('hungerNum');
 
   // ============ 状态机(sprite) ============
-  const STATES = ['idle', 'walk', 'eat', 'sleep'];
+  // attack = 扑爪(窗口入侵触发);eat = 低头吃(git commit 触发)
+  const STATES = ['idle', 'walk', 'eat', 'sleep', 'attack'];
   let currentState = 'idle';
 
   function setState(name) {

@@ -486,13 +486,15 @@ function startTransientState(state, durationMs) {
   }, durationMs);
 }
 
+// 函数名 triggerEat 是历史遗留:原本所有触发都用 eat 状态。
+// 现在分了:窗口入侵 → attack 状态(扑爪);git commit → eat 状态(真吃)
 function triggerEat({ processName, processPath, title, hwnd }) {
   const willMinimize = appConfig?.monitor?.actuallyMinimize === true;
   const penalty = appConfig?.hunger?.intruderPenalty ?? 10;
   if (hunger) hunger.subtract(penalty);
 
   console.log(
-    `[FocusCat] EAT name="${processName}" path="${processPath || ''}" title="${title}" hwnd=${hwnd} minimize=${willMinimize} hunger=${hunger?.value}`
+    `[FocusCat] ATTACK name="${processName}" path="${processPath || ''}" title="${title}" hwnd=${hwnd} minimize=${willMinimize} hunger=${hunger?.value}`
   );
 
   if (willMinimize && hwnd) {
@@ -502,7 +504,7 @@ function triggerEat({ processName, processPath, title, hwnd }) {
   }
 
   const dur = appConfig?.monitor?.eatDurationMs ?? 3000;
-  startTransientState('eat', dur);
+  startTransientState('attack', dur);
 }
 
 function triggerCommit({ sha, message }) {
