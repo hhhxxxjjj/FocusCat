@@ -77,7 +77,12 @@ class HungerSystem extends EventEmitter {
   }
 
   _clamp(v) {
-    if (!Number.isFinite(v)) return this._value || 0;
+    // 显式 fallback:
+    //   - 当前已有 finite 值时,保留
+    //   - 否则返回 min(构造函数初始化时,this._value 还没定义,走这条)
+    if (!Number.isFinite(v)) {
+      return Number.isFinite(this._value) ? this._value : this.min;
+    }
     return Math.max(this.min, Math.min(this.max, v));
   }
 }

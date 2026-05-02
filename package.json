@@ -36,6 +36,10 @@
       "config.example.json",
       "package.json"
     ],
+    "asarUnpack": [
+      "node_modules/active-win/**/*",
+      "src/monitor/minimize.ps1"
+    ],
     "win": {
       "target": "nsis",
       "icon": "src/assets/icon.ico"

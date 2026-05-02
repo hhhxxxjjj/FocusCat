@@ -19,6 +19,14 @@
 - 估计工作量:0.5 天
 - 备注:HURT.png 已经在素材包里;符合工程文档 4.2 的"😱 快饿死"格
 
+### 2026-05-02: 阈值表统一(架构债,v0.2 第一件事)
+- 现状:`src/core/hunger-system.js` 的 `getLevel` 和 `src/renderer/cat.js` 的 `levelFor` 是两份独立的阈值常量(`>=80 full / >=50 normal / >=20 hungry / else starving`)
+- 问题:两套数字现在恰好一致,但以后调一边忘记同步另一边就会埋 bug。renderer 用 `data-level` 决定血条颜色,所以错位的话视觉和实际语义会脱钩
+- 推荐方案:主进程通过 IPC 把 `level` 字段连同 `value` 一起推下去(`cat:hunger` 事件 payload 加上 level),renderer 不再自己算
+- 优先级:中(架构债,但 v0.1 不阻塞)
+- 工作量:0.5 天
+- 备注:用户在 v0.1 push 前 review 时点出的隐性 bug 等位
+
 ### 2026-05-02: 死亡 + 复活机制(用户提议,我作为对手方推迟到 v0.2+)
 - 想法:饱腹感 0 持续 N 时间 → DEATH 动画(9 帧)→ 用户做某事(commit?点击?)→ 复活
 - 拒绝理由:
