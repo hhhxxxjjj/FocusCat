@@ -1,0 +1,33 @@
+# Node / Electron
+node_modules/
+build/
+dist/
+out/
+
+# 用户本地配置(不要提交到 git)
+config.json
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# 日志
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# 电子打包缓存
+.cache/
+
+# 美术素材源压缩包(解压后放 src/assets/)
+*.zip
+_zip_inspect/
+_zip_full/
+ 
+*.docx 
+~$* 
+.~lock.* 

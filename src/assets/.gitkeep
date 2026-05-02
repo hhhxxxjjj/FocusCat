@@ -1,0 +1,9 @@
+# 美术资源目录
+# 预计放入(Day 4-5 期间):
+#   idle.gif   - 平静坐着 / 等待
+#   walk.gif   - 走来走去
+#   eat.gif    - 吃东西(用户切到非白名单应用 / git commit 时触发)
+#   sleep.gif  - 睡觉(可选)
+#
+# 来源建议:itch.io / OpenGameArt / 自己画
+# 风格要求:四个状态视觉统一,像素风,透明背景

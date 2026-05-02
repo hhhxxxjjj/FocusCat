@@ -1,0 +1,48 @@
+{
+  "name": "focus-cat",
+  "version": "0.1.0",
+  "description": "你写代码,她吃饭。你不写,她饿。你切屏,她吃你的应用。",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder --win",
+    "pack": "electron-builder --dir"
+  },
+  "keywords": [
+    "desktop-pet",
+    "focus",
+    "productivity",
+    "electron",
+    "pixel-cat"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "active-win": "^8.2.0"
+  },
+  "build": {
+    "appId": "com.focuscat.app",
+    "productName": "FocusCat",
+    "directories": {
+      "output": "build"
+    },
+    "files": [
+      "src/**/*",
+      "config.example.json",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

@@ -1,0 +1,289 @@
+/* FocusCat renderer styles
+   Day 4-5: emoji 占位 → 像素 sprite */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+  font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+.cat {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  -webkit-app-region: drag;
+}
+
+/* ====================================================================
+   Sprite 系统
+   原始素材:80×64 / 帧
+   渲染时整体放大(transform: scale(2.4)) → 192×154 显示尺寸
+   image-rendering: pixelated 保证像素艺术不被双线性插值糊掉
+   ==================================================================== */
+
+.cat-sprite-wrapper {
+  width: 80px;
+  height: 64px;
+  position: relative;
+  pointer-events: none;
+  /* 落地反弹的入场动画(只跑一次) */
+  animation: cat-hello 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  /* 整体放大 */
+  transform: scale(2.4);
+  transform-origin: center;
+  /* 投影:让猫在浅色桌面上也看得见 */
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35));
+}
+
+/* pacer 层:负责 sprite 朝向(配合桌面行走的方向)
+   素材默认朝向是"左"(头在左,尾在右)。所以当猫向右走时要翻转。
+   桌面位移由主进程驱动整个窗口,不在这里做。 */
+.cat-sprite-pacer {
+  position: absolute;
+  inset: 0;
+  width: 80px;
+  height: 64px;
+  transition: transform 0.18s ease-out;
+}
+
+body.cat-flipped .cat-sprite-pacer {
+  transform: scaleX(-1);
+}
+
+.cat-sprite {
+  position: absolute;
+  inset: 0;
+  width: 80px;
+  height: 64px;
+  background-repeat: no-repeat;
+  background-size: auto 64px;
+  /* 像素艺术专用渲染模式 */
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* idle:8 帧,慢悠悠地 1 秒一轮 */
+.cat-sprite--idle {
+  background-image: url('../assets/idle.png');
+  animation: sprite-idle 1.0s steps(8) infinite;
+}
+@keyframes sprite-idle {
+  from { background-position: 0 0; }
+  to   { background-position: -640px 0; }
+}
+
+/* walk:12 帧,稍快 0.9 秒一轮 */
+.cat-sprite--walk {
+  background-image: url('../assets/walk.png');
+  animation: sprite-walk 0.9s steps(12) infinite;
+}
+@keyframes sprite-walk {
+  from { background-position: 0 0; }
+  to   { background-position: -960px 0; }
+}
+
+/* eat:7 帧,有节奏感 0.7 秒一轮 */
+.cat-sprite--eat {
+  background-image: url('../assets/eat.png');
+  animation: sprite-eat 0.7s steps(7) infinite;
+}
+@keyframes sprite-eat {
+  from { background-position: 0 0; }
+  to   { background-position: -560px 0; }
+}
+
+/* sleep:8 帧,慢悠悠 1.6 秒一轮(呼吸感) */
+.cat-sprite--sleep {
+  background-image: url('../assets/sleep.png');
+  animation: sprite-sleep 1.6s steps(8) infinite;
+}
+@keyframes sprite-sleep {
+  from { background-position: 0 0; }
+  to   { background-position: -640px 0; }
+}
+
+/* 入场:从下方弹起,带轻微 overshoot */
+@keyframes cat-hello {
+  0%   { transform: scale(1.5) translateY(40px); opacity: 0; }
+  60%  { transform: scale(2.6) translateY(-8px); opacity: 1; }
+  80%  { transform: scale(2.35) translateY(2px); }
+  100% { transform: scale(2.4) translateY(0); opacity: 1; }
+}
+
+/* ==================== 饱腹感血条 ==================== */
+.cat-hunger {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 5;
+  /* 入场动画跟着 cat--intro 一起淡入 */
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+body.cat--intro .cat-hunger,
+body.cat-hunger-ready .cat-hunger {
+  opacity: 1;
+}
+
+.cat-hunger-bar {
+  width: 64px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+  padding: 1px;
+  /* 像素风:不要圆角的填充内里 */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.cat-hunger-fill {
+  height: 100%;
+  width: 80%; /* JS 控制 */
+  background: linear-gradient(180deg, #8be37e 0%, #5fc24f 100%);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+  /* 像素风,边角直 */
+  border-radius: 0;
+}
+
+.cat-hunger-num {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.55);
+  padding: 1px 6px;
+  border-radius: 3px;
+  min-width: 22px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  font-family: ui-monospace, "Consolas", monospace;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+/* 状态色:full / normal / hungry / starving */
+.cat-hunger[data-level="full"]     .cat-hunger-fill { background: linear-gradient(180deg, #8be37e 0%, #5fc24f 100%); }
+.cat-hunger[data-level="normal"]   .cat-hunger-fill { background: linear-gradient(180deg, #d8e360 0%, #b3c93a 100%); }
+.cat-hunger[data-level="hungry"]   .cat-hunger-fill { background: linear-gradient(180deg, #ffb547 0%, #f08c1d 100%); }
+.cat-hunger[data-level="starving"] .cat-hunger-fill {
+  background: linear-gradient(180deg, #ff5757 0%, #d62929 100%);
+  animation: hunger-starving-pulse 0.7s ease-in-out infinite alternate;
+}
+
+.cat-hunger[data-level="starving"] .cat-hunger-num {
+  background: rgba(180, 30, 30, 0.85);
+  animation: hunger-starving-pulse 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes hunger-starving-pulse {
+  from { filter: brightness(1); }
+  to   { filter: brightness(1.35); }
+}
+
+/* +30 / -10 这种数值变化的浮字反馈 */
+.cat-hunger-popup {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 700;
+  pointer-events: none;
+  animation: hunger-popup 1.2s ease-out forwards;
+  text-shadow:
+    -1px -1px 0 #000, 1px -1px 0 #000,
+    -1px  1px 0 #000, 1px  1px 0 #000;
+}
+.cat-hunger-popup.is-up   { color: #6fff86; }
+.cat-hunger-popup.is-down { color: #ff7676; }
+@keyframes hunger-popup {
+  0%   { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
+  20%  { opacity: 1; transform: translate(-50%, -6px) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%, -28px) scale(0.95); }
+}
+
+/* ==================== hint 提示牌 ==================== */
+.cat-hint {
+  margin-top: 18px; /* 给 sprite 让出空间(scale 后猫占 ~154px 高) */
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.7);
+  background: rgba(255, 255, 255, 0.88);
+  padding: 3px 10px;
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.cat:hover .cat-hint,
+body.cat--intro .cat-hint {
+  opacity: 1;
+}
+
+/* ==================== 控制按钮 ==================== */
+.cat-ctrl {
+  position: absolute;
+  top: 6px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 13px;
+  line-height: 24px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.35;
+  transition: opacity 0.2s, background 0.15s, transform 0.15s;
+  -webkit-app-region: no-drag;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+.cat-ctrl--reset { left: 6px; }
+.cat-ctrl--quit  { right: 6px; }
+
+body.cat--intro .cat-ctrl {
+  animation: ctrl-intro 0.5s ease 0.3s both;
+}
+@keyframes ctrl-intro {
+  0%   { opacity: 0; transform: scale(0.5); }
+  100% { opacity: 0.9; transform: scale(1); }
+}
+
+.cat:hover .cat-ctrl,
+body.cat--intro .cat-ctrl {
+  opacity: 0.9;
+}
+
+.cat-ctrl:hover {
+  opacity: 1 !important;
+  background: rgba(0, 0, 0, 0.75);
+  transform: scale(1.15);
+}
+
+.cat-ctrl--quit:hover {
+  background: rgba(220, 60, 60, 0.9);
+}
+
+.cat-ctrl:active {
+  transform: scale(0.95);
+}

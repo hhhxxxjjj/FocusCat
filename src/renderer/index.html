@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self';" />
+  <title>FocusCat</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="cat" class="cat">
+    <!-- 饱腹感血条 + 数字(顶部居中) -->
+    <div class="cat-hunger" id="catHunger" data-level="full">
+      <div class="cat-hunger-bar">
+        <div class="cat-hunger-fill" id="hungerFill"></div>
+      </div>
+      <div class="cat-hunger-num" id="hungerNum">--</div>
+    </div>
+
+    <div class="cat-sprite-wrapper">
+      <div class="cat-sprite-pacer">
+        <div class="cat-sprite cat-sprite--idle" id="catSprite"></div>
+      </div>
+    </div>
+    <div class="cat-hint" id="catHint">拖我移动 · ⌂ 复位 · ✕ 退出</div>
+
+    <button class="cat-ctrl cat-ctrl--reset" id="btnReset" title="复位到右下角">⌂</button>
+    <button class="cat-ctrl cat-ctrl--quit"  id="btnQuit"  title="退出 FocusCat(她会饿死)">✕</button>
+  </div>
+
+  <script src="cat.js"></script>
+</body>
+</html>
