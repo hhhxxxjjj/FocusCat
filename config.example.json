@@ -46,7 +46,19 @@
 
     "Claude",
     "Claude.exe",
-    "ClaudeDesktop.exe"
+    "ClaudeDesktop.exe",
+
+    "obs64.exe",
+    "obs32.exe",
+    "OBS Studio",
+    "ScreenToGif.exe",
+    "ScreenToGif",
+    "ShareX.exe",
+    "ShareX",
+    "Bandicam.exe",
+    "Camtasia.exe",
+    "CamtasiaStudio.exe",
+    "GameBar.exe"
   ],
 
   "gitRepo": "C:\\path\\to\\your\\repo",

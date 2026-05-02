@@ -61,6 +61,12 @@ const DEFAULT_CONFIG = {
     'Committen.exe', 'FocusCat.exe', 'electron.exe',
     // AI 助手
     'Claude', 'Claude.exe', 'ClaudeDesktop.exe',
+    // 录屏 / 流媒体工具(用户要做 demo / 教程 / 直播,不该被吃)
+    'obs64.exe', 'obs32.exe', 'OBS Studio',
+    'ScreenToGif.exe', 'ScreenToGif',
+    'ShareX.exe', 'ShareX',
+    'Bandicam.exe', 'Camtasia.exe', 'CamtasiaStudio.exe',
+    'GameBar.exe',
   ],
   monitor: {
     intervalMs: 1000,

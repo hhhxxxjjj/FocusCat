@@ -4,7 +4,20 @@
 
 `Committen` = `commit` + `kitten`. A pixel cat who lives on your desktop and eats your `git commit`s. When you slack off into apps that aren't on your work whitelist, she pounces and minimizes them. When you don't code, she goes hungry. You don't want her to be hungry.
 
-<!-- TODO: GIF demo here. 30s loop showing idle → switch to WeChat → cat attacks/minimizes → git commit → +30 popup → eat animation -->
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <img src="demo-feed.gif" alt="git commit feeds her">
+      <br>
+      <sub><b>🍱 You <code>git commit</code> → she eats → +30 hunger</b></sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="demo-attack.gif" alt="non-work app gets minimized">
+      <br>
+      <sub><b>😾 You slack off → she pounces → the window is minimized</b></sub>
+    </td>
+  </tr>
+</table>
 
 > **Status:** `v0.1.0` shipped. [Download the Windows installer →](https://github.com/hhhxxxjjj/Committen/releases/latest)
 >

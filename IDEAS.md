@@ -19,6 +19,12 @@
 - 估计工作量:0.5 天
 - 备注:HURT.png 已经在素材包里;符合工程文档 4.2 的"😱 快饿死"格
 
+### 2026-05-02: "录屏模式" / 一键放过(从 v0.1 真用户反馈来的)
+- 问题:用户(我自己)给项目录 GIF 时发现,**OBS / ScreenToGif / ShareX 全被猫吃了**——白名单默认没有录屏工具,但用户做 demo / 教程 / 直播都需要它们活着
+- v0.1.1+ 临时修法:已经把常见录屏工具(OBS / ScreenToGif / ShareX / Camtasia / Bandicam)加进默认 whitelist
+- v0.2 长期解法:加一个"录屏模式" toggle / 快捷键,启用后猫**完全停止吃应用**(只保留 idle/walk/sleep 视觉),让用户安心录屏。录完关掉模式
+- 优先级:中(影响所有想做内容的用户)
+
 ### 2026-05-02: 阈值表统一(架构债,v0.2 第一件事)
 - 现状:`src/core/hunger-system.js` 的 `getLevel` 和 `src/renderer/cat.js` 的 `levelFor` 是两份独立的阈值常量(`>=80 full / >=50 normal / >=20 hungry / else starving`)
 - 问题:两套数字现在恰好一致,但以后调一边忘记同步另一边就会埋 bug。renderer 用 `data-level` 决定血条颜色,所以错位的话视觉和实际语义会脱钩
