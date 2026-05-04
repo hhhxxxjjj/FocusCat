@@ -2,7 +2,7 @@
 // v0.1 Day 6: 加入活动窗口监听,非白名单窗口 → 触发猫切到 eat 状态
 //             (Day 7 再加上"真的最小化")
 
-const { app, BrowserWindow, screen, ipcMain } = require('electron');
+const { app, BrowserWindow, screen, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const WindowMonitor = require('./monitor/window-monitor');
@@ -67,12 +67,21 @@ const DEFAULT_CONFIG = {
     'ShareX.exe', 'ShareX',
     'Bandicam.exe', 'Camtasia.exe', 'CamtasiaStudio.exe',
     'GameBar.exe',
+    // 开发运行时 / IDE 跑的程序进程(用户在调试自己写的程序时,不该被吃)
+    'java.exe', 'javaw.exe',
+    'python.exe', 'pythonw.exe', 'py.exe',
+    'node.exe', 'npm.exe',
+    'dotnet.exe',
+    'cargo.exe', 'rustc.exe',
+    'go.exe',
+    'ruby.exe',
   ],
   monitor: {
     intervalMs: 1000,
     eatDurationMs: 3000,
     cooldownMs: 5000,
-    actuallyMinimize: false, // Day 6 默认 false,Day 7 实装最小化逻辑后再让用户决定
+    actuallyMinimize: false, // 默认 false 安全模式;true 才真最小化
+    passive: false,          // v0.1.2:true 时完全不 attack(录屏 / 演示用)
   },
   hunger: {
     initial: 80,
@@ -82,31 +91,56 @@ const DEFAULT_CONFIG = {
   },
 };
 
-function loadConfig() {
-  const projectRoot = path.join(__dirname, '..');
-  const userPath = path.join(projectRoot, 'config.json');
-  const examplePath = path.join(projectRoot, 'config.example.json');
+// v0.1.2 起,用户配置文件统一放在 userData(可写位置),装机用户能自己改。
+// 首次启动会把 bundled config.example.json 拷一份到那里。
+function getUserConfigPath() {
+  return path.join(app.getPath('userData'), 'config.json');
+}
 
-  for (const p of [userPath, examplePath]) {
-    try {
-      if (fs.existsSync(p)) {
-        const raw = fs.readFileSync(p, 'utf-8');
-        const cfg = JSON.parse(raw);
-        // 浅合并:用户值覆盖默认值
-        const merged = {
-          ...DEFAULT_CONFIG,
-          ...cfg,
-          monitor: { ...DEFAULT_CONFIG.monitor, ...(cfg.monitor || {}) },
-          hunger: { ...DEFAULT_CONFIG.hunger, ...(cfg.hunger || {}) },
-        };
-        console.log(`[Committen] 配置来自 ${path.basename(p)}`);
-        return merged;
-      }
-    } catch (e) {
-      console.warn(`[Committen] 配置 ${p} 解析失败:`, e.message);
+function ensureUserConfigExists() {
+  const userPath = getUserConfigPath();
+  if (fs.existsSync(userPath)) return userPath;
+
+  // 首次启动:从 app 内置的 config.example.json 拷一份过去
+  const projectRoot = path.join(__dirname, '..');
+  const examplePath = path.join(projectRoot, 'config.example.json');
+  try {
+    if (fs.existsSync(examplePath)) {
+      // 确保 userData 目录存在
+      const userDir = path.dirname(userPath);
+      if (!fs.existsSync(userDir)) fs.mkdirSync(userDir, { recursive: true });
+      fs.copyFileSync(examplePath, userPath);
+      console.log(`[Committen] First run: copied config to ${userPath}`);
+    } else {
+      console.warn('[Committen] bundled config.example.json missing, will use built-in defaults');
     }
+  } catch (e) {
+    console.warn('[Committen] failed to seed config:', e.message);
   }
-  console.log('[Committen] 没找到 config.json,用内置默认值');
+  return userPath;
+}
+
+function loadConfig() {
+  const userPath = ensureUserConfigExists();
+
+  try {
+    if (fs.existsSync(userPath)) {
+      const raw = fs.readFileSync(userPath, 'utf-8');
+      const cfg = JSON.parse(raw);
+      const merged = {
+        ...DEFAULT_CONFIG,
+        ...cfg,
+        monitor: { ...DEFAULT_CONFIG.monitor, ...(cfg.monitor || {}) },
+        hunger: { ...DEFAULT_CONFIG.hunger, ...(cfg.hunger || {}) },
+      };
+      console.log(`[Committen] config loaded from ${userPath}`);
+      return merged;
+    }
+  } catch (e) {
+    console.warn(`[Committen] config parse failed at ${userPath}:`, e.message);
+  }
+
+  console.log('[Committen] using built-in defaults');
   return DEFAULT_CONFIG;
 }
 
@@ -495,6 +529,12 @@ function startTransientState(state, durationMs) {
 // 函数名 triggerEat 是历史遗留:原本所有触发都用 eat 状态。
 // 现在分了:窗口入侵 → attack 状态(扑爪);git commit → eat 状态(真吃)
 function triggerEat({ processName, processPath, title, hwnd }) {
+  // v0.1.2:passive 模式下完全跳过——给录屏 / 演示用
+  if (appConfig?.monitor?.passive === true) {
+    console.log(`[Committen] passive mode, skipping attack on "${processName}"`);
+    return;
+  }
+
   const willMinimize = appConfig?.monitor?.actuallyMinimize === true;
   const penalty = appConfig?.hunger?.intruderPenalty ?? 10;
   if (hunger) hunger.subtract(penalty);
@@ -623,6 +663,16 @@ ipcMain.on('cat:reset-position', () => {
   catWindow.setPosition(def.x, def.y);
   setTimeout(() => { snapping = false; }, 50);
   saveState({ position: def });
+});
+
+// v0.1.2: 用户点 ⚙️ 按钮 → 用默认编辑器(记事本等)打开 config.json
+ipcMain.on('cat:open-config', async () => {
+  const userPath = ensureUserConfigExists(); // 不存在就先建
+  console.log(`[Committen] opening config: ${userPath}`);
+  const error = await shell.openPath(userPath);
+  if (error) {
+    console.error('[Committen] failed to open config:', error);
+  }
 });
 
 // ==================== App 生命周期 ====================

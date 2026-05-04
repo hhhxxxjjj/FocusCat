@@ -58,7 +58,20 @@
     "Bandicam.exe",
     "Camtasia.exe",
     "CamtasiaStudio.exe",
-    "GameBar.exe"
+    "GameBar.exe",
+
+    "java.exe",
+    "javaw.exe",
+    "python.exe",
+    "pythonw.exe",
+    "py.exe",
+    "node.exe",
+    "npm.exe",
+    "dotnet.exe",
+    "cargo.exe",
+    "rustc.exe",
+    "go.exe",
+    "ruby.exe"
   ],
 
   "gitRepo": "C:\\path\\to\\your\\repo",
@@ -67,7 +80,9 @@
     "intervalMs": 1000,
     "eatDurationMs": 3000,
     "cooldownMs": 5000,
-    "actuallyMinimize": false
+    "actuallyMinimize": false,
+    "_passive_note": "Set passive=true to fully disable attack reactions (e.g., when recording demos / streaming). She'll still react to git commits and decay over time, but won't pounce on non-whitelist apps.",
+    "passive": false
   },
 
   "hunger": {

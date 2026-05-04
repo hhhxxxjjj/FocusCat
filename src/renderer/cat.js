@@ -1,16 +1,19 @@
 // Committen renderer
-// Day 10-11: 状态由主进程驱动 + 饱腹感血条显示
+// v0.1.2: 单 ⚙ 按钮 + 弹出菜单(Reset / Open config / Quit)
 
 (function () {
   const sprite = document.getElementById('catSprite');
-  const btnQuit = document.getElementById('btnQuit');
-  const btnReset = document.getElementById('btnReset');
   const hungerEl = document.getElementById('catHunger');
   const hungerFill = document.getElementById('hungerFill');
   const hungerNum = document.getElementById('hungerNum');
 
+  const btnMenu = document.getElementById('btnMenu');
+  const menuEl = document.getElementById('catMenu');
+  const menuReset = document.getElementById('menuReset');
+  const menuConfig = document.getElementById('menuConfig');
+  const menuQuit = document.getElementById('menuQuit');
+
   // ============ 状态机(sprite) ============
-  // attack = 扑爪(窗口入侵触发);eat = 低头吃(git commit 触发)
   const STATES = ['idle', 'walk', 'eat', 'sleep', 'attack'];
   let currentState = 'idle';
 
@@ -51,10 +54,8 @@
     if (!Number.isFinite(value)) return;
     const v = Math.max(0, Math.min(100, Math.round(value)));
 
-    // 第一次拿到数值后,允许 hunger 自身的 fade-in(intro 之外也显示)
     document.body.classList.add('cat-hunger-ready');
 
-    // 数字变化的浮字反馈(+30 / -10)
     if (lastHunger !== null && v !== lastHunger) {
       const delta = v - lastHunger;
       spawnHungerPopup(delta);
@@ -80,8 +81,6 @@
   });
 
   // ============ 调试入口 ============
-  // contextBridge 暴露的 window.committen 是冻结对象,不能从这边加属性。
-  // 所以 debug 方法都挂到独立的 window.committenDebug 上。
   window.committenDebug = {
     setState,
     getState: () => currentState,
@@ -93,15 +92,51 @@
   document.body.classList.add('cat--intro');
   setTimeout(() => document.body.classList.remove('cat--intro'), 5000);
 
-  // ============ 按钮 ============
-  btnQuit.addEventListener('click', () => {
+  // ============ 菜单交互 ============
+  function openMenu() {
+    menuEl.hidden = false;
+  }
+  function closeMenu() {
+    menuEl.hidden = true;
+  }
+  function toggleMenu() {
+    if (menuEl.hidden) openMenu();
+    else closeMenu();
+  }
+
+  btnMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleMenu();
+  });
+
+  // 点菜单外面任意位置 → 关闭菜单
+  document.addEventListener('click', (e) => {
+    if (menuEl.hidden) return;
+    if (menuEl.contains(e.target) || btnMenu.contains(e.target)) return;
+    closeMenu();
+  });
+
+  // Esc 也关菜单
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !menuEl.hidden) closeMenu();
+  });
+
+  // 菜单项点击
+  menuReset.addEventListener('click', () => {
+    window.committen.resetPosition();
+    closeMenu();
+  });
+
+  menuConfig.addEventListener('click', () => {
+    window.committen.openConfig();
+    closeMenu();
+  });
+
+  menuQuit.addEventListener('click', () => {
+    closeMenu();
     if (confirm("Quit Committen? (She'll starve.)")) {
       window.committen.quit();
     }
-  });
-
-  btnReset.addEventListener('click', () => {
-    window.committen.resetPosition();
   });
 
   console.log('[Committen] renderer ready');

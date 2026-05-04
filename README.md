@@ -84,9 +84,9 @@ Run from source if you want to **edit the whitelist or watch a custom git repo**
 
 ## Configuration
 
-The packaged `.exe` ships with default settings. To customize, copy `config.example.json` to `config.json` and edit. `config.json` is gitignored and overrides the example.
+**Easy way (v0.1.2+):** Hover over the cat → click the **⚙ button** → `config.json` opens in your default editor. Edit, save, restart Committen. Done.
 
-> v0.1 limitation: the packaged `.exe` reads its bundled config and can't be customized post-install. You need to clone the source for now. **v0.1.1 will move config to `userData/` so installed users can edit it.**
+The config file lives at `%APPDATA%\committen\config.json` on Windows. On first launch, it's auto-created from a sensible default template.
 
 ### Whitelist
 
@@ -122,6 +122,16 @@ When you trust the whitelist, flip it:
 
 Restart, and she'll start actually minimizing distraction windows.
 
+### Passive mode (for demos / streaming / screen recording)
+
+Recording your screen and don't want the cat to pounce on your recording software? Flip:
+
+```json
+"monitor": { "passive": true }
+```
+
+She'll still play her hunger / idle / sleep animations and react to your `git commit`s, but she **won't attack** anything. Restart to apply, flip back when you're done recording.
+
 ---
 
 ## How she works
@@ -149,8 +159,9 @@ Committen (Electron)
 | Version | Goal | Status |
 |---------|------|--------|
 | `v0.1.0` | First public release: cat + sprite states + hunger + window monitor + git watcher | ✅ Released as FocusCat |
-| `v0.1.1` | Rename to Committen; config in `userData/` so installed users can edit; smarter UWP whitelist | 🚧 In progress |
-| `v0.2`   | Address top user-feedback items from v0.1.x | ⏳ |
+| `v0.1.1` | Rename to Committen + README rebuild | ✅ |
+| `v0.1.2` | Config in `userData/` for post-install editing; ⚙ open-config button; passive mode for screen recording | ✅ |
+| `v0.2`   | Smarter UWP whitelist; HURT / JUMP states; address top user-feedback items | ⏳ |
 | later    | macOS port, custom sprite packs, statistics view | 💭 |
 
 v0.2 priorities will be driven by real user feedback from v0.1.x — file an issue if something hits you.

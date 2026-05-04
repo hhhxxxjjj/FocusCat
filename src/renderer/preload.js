@@ -4,6 +4,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('committen', {
   quit: () => ipcRenderer.send('cat:quit'),
   resetPosition: () => ipcRenderer.send('cat:reset-position'),
+  openConfig: () => ipcRenderer.send('cat:open-config'),
 
   // 主进程通知 renderer 切 sprite 状态(idle / walk / eat)
   onSetState: (callback) => {

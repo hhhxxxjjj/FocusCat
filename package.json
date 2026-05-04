@@ -1,6 +1,6 @@
 {
   "name": "committen",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Committen = commit + kitten. A pixel cat desktop pet who eats your git commits and pounces on apps that aren't on your work whitelist.",
   "main": "src/main.js",
   "scripts": {

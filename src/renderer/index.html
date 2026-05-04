@@ -22,10 +22,27 @@
         <div class="cat-sprite cat-sprite--idle" id="catSprite"></div>
       </div>
     </div>
-    <div class="cat-hint" id="catHint">拖我移动 · ⌂ 复位 · ✕ 退出</div>
+    <div class="cat-hint" id="catHint">Drag to move · ⚙ for actions</div>
 
-    <button class="cat-ctrl cat-ctrl--reset" id="btnReset" title="复位到右下角">⌂</button>
-    <button class="cat-ctrl cat-ctrl--quit"  id="btnQuit"  title="Quit Committen (she'll starve)">✕</button>
+    <!-- 唯一可见按钮:settings 齿轮(右上) -->
+    <button class="cat-ctrl cat-ctrl--menu" id="btnMenu" title="Menu">⚙</button>
+
+    <!-- 弹出菜单(默认隐藏) -->
+    <div class="cat-menu" id="catMenu" hidden>
+      <button class="cat-menu-item" id="menuReset">
+        <span class="cat-menu-icon">⌂</span>
+        <span>Reset position</span>
+      </button>
+      <button class="cat-menu-item" id="menuConfig">
+        <span class="cat-menu-icon">📝</span>
+        <span>Open config</span>
+      </button>
+      <div class="cat-menu-divider"></div>
+      <button class="cat-menu-item cat-menu-item--danger" id="menuQuit">
+        <span class="cat-menu-icon">✕</span>
+        <span>Quit Committen</span>
+      </button>
+    </div>
   </div>
 
   <script src="cat.js"></script>
