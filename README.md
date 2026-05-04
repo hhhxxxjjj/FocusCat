@@ -153,7 +153,7 @@ Committen (Electron)
 | `v0.2`   | Address top user-feedback items from v0.1.x | ⏳ |
 | later    | macOS port, custom sprite packs, statistics view | 💭 |
 
-See [`IDEAS.md`](IDEAS.md) for the full backlog (and explicitly rejected ideas — death/revival, in-cat git GUI, file-save detection — with reasoning).
+v0.2 priorities will be driven by real user feedback from v0.1.x — file an issue if something hits you.
 
 ---
 

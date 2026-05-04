@@ -31,4 +31,7 @@ _zip_full/
 *.docx 
 ~$* 
 .~lock.* 
-ezgif.com-* 
+ezgif.com-*
+
+# 项目内部 roadmap / 想法 backlog,不公开
+IDEAS.md
