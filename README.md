@@ -102,13 +102,34 @@ Add `"WhateverApp"` (the `name` value) to your `whitelist` array, restart, done.
 
 ### Git monitor
 
-Set `gitRepo` to a repo path she should watch:
+By default `gitRepo` is `"auto"` — on launch, Committen does two things:
+
+1. Walks up from her own working directory looking for a `.git` folder
+2. Scans common dev locations one level deep: `~/Documents`, `~/Desktop`, `~/Projects`, `~/Code`, `~/Dev`, `~/source/repos`, `D:\`, `E:\`, etc.
+
+All discovered git repos get watched simultaneously. **Zero config — most users will never need to touch `gitRepo`.**
+
+To override with explicit paths:
 
 ```json
 "gitRepo": "D:\\path\\to\\your\\repo"
 ```
 
-She tails `.git/logs/HEAD`. Every commit (made anywhere — IDE, terminal, GitHub Desktop) gives her +30.
+Or watch multiple specific repos:
+
+```json
+"gitRepo": ["D:\\proj1", "D:\\proj2", "D:\\side-project"]
+```
+
+Or mix auto-discovery with manual additions:
+
+```json
+"gitRepo": ["auto", "D:\\some-repo-not-in-common-locations"]
+```
+
+She tails each `.git/logs/HEAD`. Every commit (made anywhere — IDE, terminal, GitHub Desktop) gives her +30, regardless of which repo it's in.
+
+> Privacy note: the auto-scan only checks `existsSync('.git')` on top-level subdirectories of the listed locations — it never reads file contents. If you'd rather pin to specific repos, use the explicit array form.
 
 ### Real minimize vs. animation-only
 

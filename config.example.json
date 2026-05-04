@@ -74,7 +74,8 @@
     "ruby.exe"
   ],
 
-  "gitRepo": "C:\\path\\to\\your\\repo",
+  "_gitRepo_note": "Repos to watch for commits. Each commit feeds her +30. Accepts: 'auto' (auto-detect from cwd), an absolute path string, or an array. Examples — single auto: \"auto\" — single explicit: \"D:\\\\proj\" — multi: [\"D:\\\\proj1\", \"D:\\\\proj2\"] — mix: [\"auto\", \"D:\\\\side-project\"]",
+  "gitRepo": "auto",
 
   "monitor": {
     "intervalMs": 1000,

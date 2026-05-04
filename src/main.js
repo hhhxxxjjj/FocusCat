@@ -26,7 +26,7 @@ let catWindow = null;
 let saveTimer = null;
 let snapping = false; // 防止吸附 setPosition 触发的 move 事件再次走吸附逻辑
 let monitor = null;   // WindowMonitor 实例
-let gitWatcher = null; // GitWatcher 实例
+let gitWatchers = []; // GitWatcher 实例数组(支持多 repo)
 let hunger = null;    // HungerSystem 实例
 let decayTimer = null; // 每分钟 -1 的定时器
 let appConfig = null; // 加载后的配置
@@ -127,13 +127,29 @@ function loadConfig() {
     if (fs.existsSync(userPath)) {
       const raw = fs.readFileSync(userPath, 'utf-8');
       const cfg = JSON.parse(raw);
+
+      // v0.1.2 修复:whitelist 用 union 合并,不是 cfg 完全替换 DEFAULT。
+      // 这样以后我们在 DEFAULT_CONFIG 里加新条目(如 java.exe),所有现有用户也能拿到,
+      // 不需要他们重新 seed 配置或手动加。
+      // 用户在 cfg 里加的条目仍然生效(扩展默认),但也不能"删除"默认条目——
+      // 那种需求是 v0.2 的事(可加 whitelistExclude 字段)。
+      const mergedWhitelist = [
+        ...new Set([
+          ...(DEFAULT_CONFIG.whitelist || []),
+          ...((cfg.whitelist || []).filter((s) => typeof s === 'string')),
+        ]),
+      ];
+
       const merged = {
         ...DEFAULT_CONFIG,
         ...cfg,
         monitor: { ...DEFAULT_CONFIG.monitor, ...(cfg.monitor || {}) },
         hunger: { ...DEFAULT_CONFIG.hunger, ...(cfg.hunger || {}) },
+        whitelist: mergedWhitelist,
       };
-      console.log(`[Committen] config loaded from ${userPath}`);
+      console.log(
+        `[Committen] config loaded from ${userPath} (whitelist: ${DEFAULT_CONFIG.whitelist.length} default + ${(cfg.whitelist || []).length} user = ${mergedWhitelist.length} total)`
+      );
       return merged;
     }
   } catch (e) {
@@ -393,10 +409,8 @@ function createCatWindow() {
       monitor.stop();
       monitor = null;
     }
-    if (gitWatcher) {
-      gitWatcher.stop();
-      gitWatcher = null;
-    }
+    for (const w of gitWatchers) w.stop();
+    gitWatchers = [];
     if (decayTimer) {
       clearInterval(decayTimer);
       decayTimer = null;
@@ -628,23 +642,135 @@ function startHunger() {
   }
 }
 
+// v0.1.2:从当前目录向上找最多 5 层,看看有没有 .git 文件夹。
+// 给 cwd 启动场景用(npm run dev / 在仓库内启动 .exe)。
+function autoDetectGitRepoFromCwd() {
+  let dir = process.cwd();
+  for (let i = 0; i < 5; i++) {
+    const gitDir = path.join(dir, '.git');
+    try {
+      if (fs.existsSync(gitDir)) {
+        return dir;
+      }
+    } catch (_) { /* ignore */ }
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return null;
+}
+
+// v0.1.2:扫常见开发目录一层深度,把所有 .git 仓库找出来。
+// 这样用户开 .exe 装机版后,就算从开始菜单启动(cwd 是 install dir),
+// 也能自动监听他们硬盘上的所有项目,不用手动填路径。
+function scanForGitRepos(maxResults = 30) {
+  const home = require('os').homedir();
+  // Windows 常见开发目录(覆盖大部分人)
+  const candidates = [
+    path.join(home, 'Documents'),
+    path.join(home, 'Desktop'),
+    path.join(home, 'Projects'),
+    path.join(home, 'projects'),
+    path.join(home, 'Code'),
+    path.join(home, 'code'),
+    path.join(home, 'Dev'),
+    path.join(home, 'dev'),
+    path.join(home, 'source', 'repos'),  // Visual Studio 默认
+    path.join(home, 'repos'),
+    path.join(home, 'workspace'),
+    path.join(home, 'src'),
+    'D:\\',
+    'E:\\',
+    'F:\\',
+  ];
+
+  const found = [];
+  for (const root of candidates) {
+    if (found.length >= maxResults) break;
+    try {
+      if (!fs.existsSync(root)) continue;
+      // 自身是 git 仓库
+      if (fs.existsSync(path.join(root, '.git'))) {
+        found.push(root);
+        if (found.length >= maxResults) break;
+      }
+      // 一层深
+      const entries = fs.readdirSync(root, { withFileTypes: true });
+      for (const entry of entries) {
+        if (found.length >= maxResults) break;
+        if (!entry.isDirectory()) continue;
+        // 跳过隐藏 / 系统目录
+        if (entry.name.startsWith('.') || entry.name.startsWith('$')) continue;
+        const sub = path.join(root, entry.name);
+        try {
+          if (fs.existsSync(path.join(sub, '.git'))) {
+            found.push(sub);
+          }
+        } catch (_) { /* ignore */ }
+      }
+    } catch (_) { /* permission / etc */ }
+  }
+  return [...new Set(found)];
+}
+
+// 解析 appConfig.gitRepo 成最终监听的仓库路径列表。
+// 支持:
+//   "auto"               → cwd 向上找 + 扫常见开发目录,所有 .git 都加上
+//   "D:\\proj"           → 显式单仓库
+//   ["D:\\a", "D:\\b"]   → 显式多仓库
+//   ["auto", "D:\\b"]    → 混合("auto" 自动找全部 + "D:\\b" 补充)
+function resolveGitRepos() {
+  const raw = appConfig.gitRepo;
+  const collected = [];
+
+  const items = Array.isArray(raw) ? raw : [raw];
+  for (const item of items) {
+    if (typeof item !== 'string') continue;
+    const v = item.trim();
+
+    if (!v || v.includes('path\\to\\your\\repo') || v.toLowerCase() === 'auto') {
+      // 真·自动模式:cwd-detect + 扫硬盘
+      const cwdRepo = autoDetectGitRepoFromCwd();
+      const scanned = scanForGitRepos();
+      if (cwdRepo) collected.push(cwdRepo);
+      collected.push(...scanned);
+      const total = [...new Set([cwdRepo, ...scanned].filter(Boolean))].length;
+      console.log(`[Committen] auto-discovered ${total} git repo(s) (cwd-detect + filesystem scan)`);
+      continue;
+    }
+
+    // 绝对路径,直接用
+    collected.push(v);
+  }
+
+  // 去重(同一路径不重复创建 watcher)
+  return [...new Set(collected)];
+}
+
 function startGitWatcher() {
-  const repoPath = appConfig.gitRepo;
-  // 占位字符串(用户没改 example 模板里那条)直接跳过
-  if (!repoPath || repoPath.includes('path\\to\\your\\repo')) {
-    console.log('[Committen] gitRepo not configured, skipping GitWatcher');
+  const repos = resolveGitRepos();
+
+  if (repos.length === 0) {
+    console.log('[Committen] no gitRepo configured/detected; commit feeding disabled');
     return;
   }
 
-  gitWatcher = new GitWatcher({
-    repoPath,
-    onCommit: triggerCommit,
-    onError: (e) => console.error('[Committen] git error:', e.message),
-  });
+  console.log(`[Committen] watching ${repos.length} git repo(s):`, repos.join(', '));
+
+  for (const repoPath of repos) {
+    const watcher = new GitWatcher({
+      repoPath,
+      onCommit: triggerCommit,
+      onError: (e) => console.error(`[Committen] git error (${repoPath}):`, e.message),
+    });
+    gitWatchers.push(watcher);
+  }
 
   if (catWindow) {
     catWindow.webContents.once('did-finish-load', () => {
-      setTimeout(() => gitWatcher.start(), 1100);
+      setTimeout(() => {
+        for (const w of gitWatchers) w.start();
+      }, 1100);
     });
   }
 }
